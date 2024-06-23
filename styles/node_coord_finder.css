@@ -1,0 +1,41 @@
+body {
+    margin: 0;
+    background-color: #f0f0f0;
+    text-align: center;
+}
+
+.lab-container {
+    position: relative;
+    width: 900px;
+    height: 700px;
+    margin: auto;
+}
+
+#lab-map {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #ccc;
+    position: absolute;
+}
+
+#lab-map .node {
+    position: absolute;
+    background-color: #ccc;
+    border-radius: 100%;
+    font-size: small;
+    white-space: nowrap;
+}
+
+#lab-map .node p {
+    position: inherit;
+    color: #171717;
+    top: 15px;
+}
+
+#lab-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
