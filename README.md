@@ -1,0 +1,1 @@
+User can create and attach nodes, visualize the network of nodes, and run shortest path algorithm to visualize shortest path between any two nodes. Weight or ditance between nodes is calculated using euclidian distance formula.
