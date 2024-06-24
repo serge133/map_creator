@@ -22,7 +22,7 @@ body {
 
 #lab-map .node {
     position: absolute;
-    background-color: #ccc;
+    background-color: #171717;
     border-radius: 100%;
     font-size: small;
     white-space: nowrap;

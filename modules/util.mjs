@@ -34,5 +34,5 @@ export function calc_euclidian_distance(x1, y1, x2, y2) {
   const width = x2 - x1;
   const height = y2 - y1;
 
-  return Math.sqrt(width**2 + height**2);
+  return +Math.sqrt(width**2 + height**2).toFixed(2);
 }

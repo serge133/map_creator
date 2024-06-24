@@ -1,10 +1,14 @@
-import { calc_euclidian_distance, PriorityQueue } from "../util.mjs";
+import { calc_euclidian_distance, PriorityQueue } from "./util.mjs";
 
 export class Node {
-  constructor(id, x, y, ref = null) {
+  constructor({id, x, y, ref = null}) {
     this.id = id;
     this.x = x;
     this.y = y;
+    this.ref = ref;
+  }
+
+  attach_ref(ref){
     this.ref = ref;
   }
 }
@@ -13,6 +17,12 @@ class Graph {
   constructor() {
     this.graph = {};
     this.node_mappings = {};
+  }
+
+  // Loads data from object 
+  load(graph, node_mappings) {
+    this.graph = graph;
+    this.node_mappings = node_mappings;
   }
 
   // Of type Node

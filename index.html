@@ -4,16 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>10x10 Grid of Squares</title>
-    <link rel="stylesheet" href="styles/node_coord_finder.css">
+    <link rel="stylesheet" href="styles/index.css">
 </head>
 <body>
-    <p class="description">
-        [a]: Node Addition Mode <br>
-        [Space]: Toggle Node Addition/Deletion mode;
-    </p>
-    <p id="status"></p>
     <div class="lab-container">
-        <canvas id="lab-canvas" width="900" height="700"></canvas>
+        <canvas id="lab-canvas"></canvas>
         <div id="lab-map"></div>
     </div>
     <button class="dump" id="dump-btn">Dump</button>
@@ -21,9 +16,9 @@
     <input type="text" id="to-node" placeholder="To (node id)">
     <button id="connect-btn">Connect Nodes</button>
     <button id="djikstra-btn">Run Djikstra</button>
+    <!-- <button id="load-btn">Load Map</button> -->
     <div id="adiv">
     </div>
     <script type="module" src="index.mjs"></script>
-    <script type="module" src="draw.mjs"></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 import { dijkstra_2, lab, Node } from "./modules/algorithm.mjs";
+import map from "./maps/map.1.mjs";
 
 // Get these from inspect element
 const LAB_WIDTH = 900;
@@ -12,40 +13,71 @@ const connections_drawing = [];
 document.addEventListener("DOMContentLoaded", (event) => {
   const lab_map = document.getElementById("lab-map");
   const canvas = document.getElementById("lab-canvas");
-  const ctx = canvas.getContext("2d");
+  canvas.height = LAB_HEIGHT;
+  canvas.width = LAB_WIDTH;
 
-  document.getElementById("connect-btn").addEventListener("click", connect);
+  
+  const ctx = canvas.getContext("2d");
+  
+  load_map();
+
+  document.getElementById("connect-btn").addEventListener("click", handle_connect);
   document.getElementById("dump-btn").addEventListener("click", dump);
   document
     .getElementById("djikstra-btn")
     .addEventListener("click", run_djikstra);
+  // document.getElementById("load-btn").addEventListener("click", load_map);
 
-  function createNode(x, y) {
+
+  function create_node_html(node) {
     const node_html = document.createElement("div");
+    const { id, x, y } = node;
 
     // Relative positioning for scaling purposes
-    const x_rel = (x - NODE_WIDTH / 2) / LAB_WIDTH;
-    const y_rel = (y - NODE_HEIGHT / 2) / LAB_HEIGHT;
-
+    // const x_rel = (x - NODE_WIDTH / 2) / LAB_WIDTH;
+    // const y_rel = (y - NODE_HEIGHT / 2) / LAB_HEIGHT;
     node_html.classList.add("node");
     node_html.style.left = `${x - NODE_WIDTH / 2}px`;
     node_html.style.top = `${y - NODE_HEIGHT / 2}px`;
     node_html.style.height = `${NODE_HEIGHT}px`;
     node_html.style.width = `${NODE_WIDTH}px`;
     const text = document.createElement("p");
-    const node_id = String(lab.nodes.length + 1);
-    node_html.id = `node_${node_id}`;
-    text.innerText = `(id: ${node_id}, x: ${Math.round(x)}, y: ${Math.round(
+    node_html.id = `node_${id}`;
+    text.innerText = `(id: ${id}, x: ${Math.round(x)}, y: ${Math.round(
       y
     )})`;
     node_html.appendChild(text);
 
+    node.attach_ref(node_html);
+    lab_map.appendChild(node_html);
+  }
+
+  function create_node_backend(x, y) {
+    // const node_html = document.createElement("div");
+
+
+    const node_id = String(lab.nodes.length + 1);
+    // Relative positioning for scaling purposes
+    // const x_rel = (x - NODE_WIDTH / 2) / LAB_WIDTH;
+    // const y_rel = (y - NODE_HEIGHT / 2) / LAB_HEIGHT;
+    // node_html.classList.add("node");
+    // node_html.style.left = `${x - NODE_WIDTH / 2}px`;
+    // node_html.style.top = `${y - NODE_HEIGHT / 2}px`;
+    // node_html.style.height = `${NODE_HEIGHT}px`;
+    // node_html.style.width = `${NODE_WIDTH}px`;
+    // const text = document.createElement("p");
+    // //const node_id = String(lab.nodes.length + 1);
+    // node_html.id = `node_${node_id}`;
+    // text.innerText = `(id: ${node_id}, x: ${Math.round(x)}, y: ${Math.round(
+    //   y
+    // )})`;
+    // node_html.appendChild(text);
+
     // Adds node to the algorithm
-    const node = new Node(node_id, x, y, node_html);
+    const node = new Node({id: node_id, x, y});
     console.log("Node Added!", node);
     lab.add_node(node);
-
-    lab_map.appendChild(node_html);
+    create_node_html(node);
   }
 
   lab_map.addEventListener("click", (e) => {
@@ -59,34 +91,18 @@ document.addEventListener("DOMContentLoaded", (event) => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    createNode(x, y);
+    create_node_backend(x, y);
   });
 
-  function connect() {
+  // Handle connect button click;
+  function handle_connect() {
     const from_node = lab.get_node(document.getElementById("from-node").value);
     const to_node = lab.get_node(document.getElementById("to-node").value);
-
-    // Connect the nodes in the backend
-    const distance = lab.connect(from_node, to_node);
-    console.log(
-      "Connected nodes ",
-      from_node.id,
-      " and ",
-      to_node.id,
-      " and the distance is ",
-      distance
-    );
-
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
-    draw_line(ctx, from_node.x, from_node.y, to_node.x, to_node.y);
-    connections_drawing.push({x1: from_node.x, y1: from_node.y, x2: to_node.x, y2: to_node.y});
-
-    from_node.ref.style.backgroundColor = "#171717";
-    to_node.ref.style.backgroundColor = "#171717";
+    connect_nodes(ctx, from_node, to_node);
   }
 
   function run_djikstra() {
+    // Clears old path
     clear_path_drawing();
     // Reset all node colorings
     for (const nid of lab.nodes) {
@@ -111,13 +127,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
       ctx.strokeStyle = "gold";
       ctx.lineWidth = 3;
       draw_line(ctx, curr_node.x, curr_node.y, next_node.x, next_node.y);
-      // path_drawing.push({x1: curr_node.x, y1: curr_node.y, x2: next_node.x, y2: next_node.y})
     }
-
-    // for (const nid of result.path) {
-    //   const node = lab.get_node(nid);
-    //   node.ref.style.backgroundColor = "gold";
-    // }
   }
 
   // Redraws the connections in the graph between the nodes 
@@ -130,13 +140,52 @@ document.addEventListener("DOMContentLoaded", (event) => {
       draw_line(ctx, line.x1, line.y1, line.x2, line.y2);
     }
   }
+
+  function load_map() {
+    // Loads the backend with the raw data 
+    lab.load(map.graph, map.nodes);
+
+    // Populates the screen with the nodes and the connections between the nodes 
+    for (const nid of lab.nodes) {
+      // Attaches a class to the node
+      lab.node_mappings[nid] = new Node(lab.node_mappings[nid]);
+      const node = lab.get_node(nid);
+      create_node_html(node);
+
+      for (const neighbor of Object.keys(lab.graph[nid])) {
+        const to_node = lab.get_node(neighbor);
+
+        draw_line(ctx, node.x, node.y, to_node.x, to_node.y);
+        connections_drawing.push({x1: node.x, y1: node.y, x2: to_node.x, y2: to_node.y});
+      }
+    }
+  }
 });
 
 // Dumps information about the nodes
 function dump() {
-  console.log(lab.graph);
-  console.log(lab.nodes);
-  console.log(lab.node_mappings);
+  console.log("Adjacency List: ", lab.graph);
+  console.log("node_id -> node", lab.node_mappings);
+  const data = {
+    nodes: lab.node_mappings,
+    graph: lab.graph
+  }
+
+  const new_window = window.open("", "_blank");
+  new_window.document.write(`
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Hello World</title>
+                </head>
+                <body>
+                  ${JSON.stringify(data)}
+                </body>
+                </html>
+            `);
+  new_window.document.close();
 }
 
 function draw_line(ctx, x1, y1, x2, y2) {
@@ -148,4 +197,21 @@ function draw_line(ctx, x1, y1, x2, y2) {
   ctx.stroke();
 }
 
+// Backend-only 
+function connect_nodes(ctx, from_node, to_node) {
+    // Connect the nodes in the backend
+    const distance = lab.connect(from_node, to_node);
+    console.log(
+      "Connected nodes ",
+      from_node.id,
+      " and ",
+      to_node.id,
+      " and the distance is ",
+      distance
+    );
 
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    draw_line(ctx, from_node.x, from_node.y, to_node.x, to_node.y);
+    connections_drawing.push({x1: from_node.x, y1: from_node.y, x2: to_node.x, y2: to_node.y});
+}
